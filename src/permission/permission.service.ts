@@ -1,3 +1,4 @@
+import { RoleService } from './../role/role.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Permission } from './entities/permission.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,25 +8,26 @@ import { Repository } from 'typeorm';
 export class PermissionService {
 	constructor(
 		@InjectRepository(Permission)
-		private readonly userRepository: Repository<Permission>,
+		private readonly permissionRepository: Repository<Permission>,
+		private readonly roleService: RoleService,
 	) {}
 	async create(createPermissionDto: Permission) {
-		const permission = this.userRepository.create(createPermissionDto);
-		return await this.userRepository.save(permission);
+		const permission = this.permissionRepository.create(createPermissionDto);
+		return await this.permissionRepository.save(permission);
 	}
 
 	async findAll() {
-		return await this.userRepository.find();
+		return await this.permissionRepository.find();
 	}
 
 	async findOne(id: number) {
-		return await this.userRepository.findOne({
+		return await this.permissionRepository.findOne({
 			where: { id },
 		});
 	}
 
 	async update(id: number, updatePermissionDto: Permission) {
-		const permission = await this.userRepository.findOne({
+		const permission = await this.permissionRepository.findOne({
 			where: { id },
 		});
 		if (!permission) {
@@ -33,16 +35,51 @@ export class PermissionService {
 		}
 		Object.assign(permission, updatePermissionDto);
 
-		return await this.userRepository.save(permission);
+		return await this.permissionRepository.save(permission);
 	}
 
 	async remove(id: number) {
-		const permission = await this.userRepository.findOne({
+		const permission = await this.permissionRepository.findOne({
 			where: { id },
 		});
 		if (!permission) {
 			throw new NotFoundException();
 		}
-		return await this.userRepository.remove(permission);
+		return await this.permissionRepository.remove(permission);
+	}
+	async getPermissionByRolesName(roles: string[]) {
+		const permissions = [];
+
+		for (const roleName of roles) {
+			const role = await this.roleService.findOneBy({
+				where: { name: roleName },
+				relations: ['permissions'],
+			});
+
+			if (role) {
+				permissions.push(...role.permissions);
+			}
+		}
+
+		return permissions.map((permission) => permission.name);
+	}
+	async assignPermission(roleID: number, permissionID: number[]) {
+		const role = await this.roleService.findOne(roleID);
+		if (!role) {
+			throw new NotFoundException();
+		}
+		const assignPermissions: Permission[] = [];
+		for (const permissionId of permissionID) {
+			const permission = await this.permissionRepository.findOne({
+				where: { id: permissionId },
+			});
+			if (!permission) {
+				throw new NotFoundException();
+			}
+			assignPermissions.push(permission);
+		}
+		role.permissions = assignPermissions;
+		await this.roleService.updatePermission(role.id, role.permissions);
+		return role;
 	}
 }

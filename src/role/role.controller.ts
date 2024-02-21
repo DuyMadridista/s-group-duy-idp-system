@@ -6,10 +6,12 @@ import {
 	Patch,
 	Param,
 	Delete,
+	Put,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { AssignRoleDto } from './dto/assign-role.dto';
 
 @Controller('role')
 export class RoleController {
@@ -38,5 +40,12 @@ export class RoleController {
 	@Delete(':id')
 	remove(@Param('id') id: string) {
 		return this.roleService.remove(+id);
+	}
+	@Put('assignRole')
+	assignRole(@Body() assignRoledto: AssignRoleDto) {
+		return this.roleService.assignRole(
+			assignRoledto.userID,
+			assignRoledto.roleID,
+		);
 	}
 }

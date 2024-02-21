@@ -1,4 +1,5 @@
 import { Permission } from 'src/permission/entities/permission.entity';
+import { User } from 'src/user/entities/user.entity';
 //import { User } from 'src/user/entities/user.entity';
 import {
 	Column,
@@ -23,7 +24,31 @@ export class Role {
 	@Column({ type: 'timestamptz', nullable: true, default: null })
 	updatedAt: Date;
 
-	@ManyToMany((type) => Permission)
-	@JoinTable()
-	permissions: Permission[];
+	@ManyToMany(() => Permission, (permission) => permission.roles)
+	@JoinTable({
+		name: 'roles_permissions',
+		joinColumn: {
+			name: 'rolesId',
+			referencedColumnName: 'id',
+		},
+		inverseJoinColumn: {
+			name: 'permissionId',
+			referencedColumnName: 'id',
+		},
+	})
+	permissions?: Permission[];
+
+	@ManyToMany(() => User, (user) => user.roles)
+	@JoinTable({
+		name: 'users_roles',
+		joinColumn: {
+			name: 'roleId',
+			referencedColumnName: 'id',
+		},
+		inverseJoinColumn: {
+			name: 'usersId',
+			referencedColumnName: 'id',
+		},
+	})
+	users?: User[];
 }

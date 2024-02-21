@@ -4,12 +4,15 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
+import { UsersService } from 'src/user/user.service';
+import { Permission } from 'src/permission/entities/permission.entity';
 
 @Injectable()
 export class RoleService {
 	constructor(
 		@InjectRepository(Role)
 		private readonly roleRepository: Repository<Role>,
+		private readonly userServices: UsersService,
 	) {}
 	async create(createRoleDto: CreateRoleDto) {
 		const role = this.roleRepository.create(createRoleDto);
@@ -24,6 +27,17 @@ export class RoleService {
 		return await this.roleRepository.findOne({
 			where: { id },
 		});
+	}
+	async findOneBy(query: any) {
+		try {
+			const role = await this.roleRepository.findOne(query);
+			if (!role) {
+				throw new NotFoundException('Role not found');
+			}
+			return role;
+		} catch (error) {
+			throw new NotFoundException('Role not found');
+		}
 	}
 
 	async update(id: number, updateRoleDto: UpdateRoleDto) {
@@ -46,5 +60,30 @@ export class RoleService {
 			throw new NotFoundException();
 		}
 		return await this.roleRepository.remove(role);
+	}
+	async assignRole(userID: number, roleID: number[]) {
+		const user = await this.userServices.findOneByID(userID);
+		if (!user) {
+			throw new NotFoundException();
+		}
+		const assignRoles: Role[] = [];
+		roleID.forEach(async (id) => {
+			const roles = await this.roleRepository.findOneBy({ id: id });
+			if (!roles) {
+				throw new NotFoundException();
+			}
+			assignRoles.push(roles);
+		});
+		user.roles = assignRoles;
+		await this.userServices.updateRoles(user.id, user.roles);
+		return user;
+	}
+	async updatePermission(
+		id: number,
+		permissions: Permission[],
+	): Promise<Permission> {
+		const role = await this.roleRepository.findOneOrFail({ where: { id } });
+		this.roleRepository.merge(role, { permissions });
+		return await this.roleRepository.save(role);
 	}
 }

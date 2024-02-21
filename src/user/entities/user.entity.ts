@@ -1,4 +1,3 @@
-import { Permission } from 'src/permission/entities/permission.entity';
 import { Role } from 'src/role/entities/role.entity';
 import {
 	Column,
@@ -23,7 +22,17 @@ export class User {
 	@Column({ type: 'timestamptz', nullable: true, default: null })
 	updatedAt: Date;
 
-	@ManyToMany((type) => Role)
-	@JoinTable()
-	roles: Role[];
+	@ManyToMany(() => Role)
+	@JoinTable({
+		name: 'users_roles',
+		joinColumn: {
+			name: 'usersId',
+			referencedColumnName: 'id',
+		},
+		inverseJoinColumn: {
+			name: 'roleId',
+			referencedColumnName: 'id',
+		},
+	})
+	roles?: Role[];
 }
