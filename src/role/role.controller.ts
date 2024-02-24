@@ -7,11 +7,14 @@ import {
 	Param,
 	Delete,
 	Put,
+	UseGuards,
+	SetMetadata,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
+import { PermissionGuard } from 'src/auth/guard.ts/permission.guard';
 
 @Controller('role')
 export class RoleController {
@@ -41,6 +44,8 @@ export class RoleController {
 	remove(@Param('id') id: string) {
 		return this.roleService.remove(+id);
 	}
+	@UseGuards(PermissionGuard)
+	@SetMetadata('permissions', ['super_admin permission', 'assign roles'])
 	@Put('assignRole')
 	assignRole(@Body() assignRoledto: AssignRoleDto) {
 		return this.roleService.assignRole(

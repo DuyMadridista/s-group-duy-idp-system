@@ -20,7 +20,7 @@ import { Role } from 'src/role/entities/role.entity';
 		JwtModule.register({
 			global: true,
 			secret: jwtConstants.secret,
-			signOptions: { expiresIn: '600s' },
+			signOptions: { expiresIn: '60h' },
 		}),
 		PermissionModule,
 	],
