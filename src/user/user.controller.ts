@@ -26,9 +26,9 @@ export class UserController {
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.create(createUserDto);
 	}
-	// @UseGuards(PermissionGuard)
-	// @SetMetadata('permissions', ['read user'])
-	@Public()
+	@UseGuards(PermissionGuard)
+	@SetMetadata('permissions', ['read user'])
+	// @Public()
 	@Get()
 	findAll(
 		@Query('page') page: number,

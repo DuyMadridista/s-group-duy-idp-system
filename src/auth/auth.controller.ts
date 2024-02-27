@@ -28,7 +28,7 @@ export class AuthController {
 	@UseGuards(PermissionGuard)
 	@SetMetadata('permissions', ['read user'])
 	@Get('profile')
-	getProfile(@Request() req) {
-		return req.user;
+	getProfile() {
+		return 'okk';
 	}
 }

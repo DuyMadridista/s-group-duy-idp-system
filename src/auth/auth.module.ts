@@ -12,6 +12,8 @@ import { RoleService } from 'src/role/role.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Permission } from 'src/permission/entities/permission.entity';
 import { Role } from 'src/role/entities/role.entity';
+import { RoleModule } from 'src/role/role.module';
+import { CacheService } from 'src/cache/cache.service';
 
 @Module({
 	imports: [
@@ -23,6 +25,7 @@ import { Role } from 'src/role/entities/role.entity';
 			signOptions: { expiresIn: '60h' },
 		}),
 		PermissionModule,
+		RoleModule,
 	],
 	controllers: [AuthController],
 	providers: [
@@ -33,7 +36,9 @@ import { Role } from 'src/role/entities/role.entity';
 			provide: APP_GUARD,
 			useClass: AuthGuard,
 		},
+		CacheService,
 	],
 	exports: [AuthService],
 })
 export class AuthModule {}
+//redis

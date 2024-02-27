@@ -5,17 +5,22 @@ import {
 	Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { CacheService } from 'src/cache/cache.service';
 @Injectable()
 export class PermissionGuard implements CanActivate {
-	constructor(private reflector: Reflector) {}
+	constructor(
+		private reflector: Reflector,
+		private readonly cacheService: CacheService,
+	) {}
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		console.log('PermissionGuard');
 		const req = context.switchToHttp().getRequest();
-		const userPermissions = req?.user?.permissions || [];
-		console.log('userPermissions', userPermissions);
+		console.log(req);
+		const userID = req?.user?.id || [];
+		const userPermissions =
+			await this.cacheService.getUserPermissionByID(userID);
+		//factory pattern
 		const requiredPermissions =
 			this.reflector.get<string[]>('permissions', context.getHandler()) || [];
-		console.log('requiredPermissions', requiredPermissions);
 		const hasAllRequiredPermissions = requiredPermissions.every((permission) =>
 			userPermissions.includes(permission),
 		);

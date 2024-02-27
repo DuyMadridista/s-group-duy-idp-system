@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,8 @@ import { Role } from './entities/role.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/user/user.service';
 import { Permission } from 'src/permission/entities/permission.entity';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class RoleService {
@@ -13,6 +15,7 @@ export class RoleService {
 		@InjectRepository(Role)
 		private readonly roleRepository: Repository<Role>,
 		private readonly userServices: UsersService,
+		@Inject(CACHE_MANAGER) private cacheService: Cache,
 	) {}
 	async create(createRoleDto: CreateRoleDto) {
 		const role = this.roleRepository.create(createRoleDto);
@@ -84,6 +87,15 @@ export class RoleService {
 	): Promise<Permission> {
 		const role = await this.roleRepository.findOneOrFail({ where: { id } });
 		this.roleRepository.merge(role, { permissions });
-		return await this.roleRepository.save(role);
+		await this.roleRepository.save(role);
+		console.log(await this.cacheService.get(`role:${role.id}:permissions`));
+		//update redis
+		await this.cacheService.set(
+			`role:${role.id}:permissions`,
+			JSON.stringify(permissions.map((permission) => permission.name)),
+		);
+		console.log(await this.cacheService.get(`role:${role.id}:permissions`));
+
+		return role;
 	}
 }

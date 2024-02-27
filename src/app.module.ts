@@ -8,12 +8,20 @@ import { RoleModule } from './role/role.module';
 import { PermissionModule } from './permission/permission.module';
 import { AuthModule } from './auth/auth.module';
 import typeorm from './config/typeorm';
+import * as redisStore from 'cache-manager-redis-store';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
 	imports: [
 		UserModule,
 		RoleModule,
 		PermissionModule,
+		CacheModule.register({
+			isGlobal: true,
+			store: redisStore,
+			host: 'localhost',
+			port: 6379,
+		}),
 		ConfigModule.forRoot({
 			isGlobal: true,
 			load: [typeorm],

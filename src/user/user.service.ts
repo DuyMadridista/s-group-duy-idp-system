@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Like, Repository } from 'typeorm';
@@ -6,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
 import * as bcrypt from 'bcrypt';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 @Injectable()
 export class UsersService {
 	constructor(
@@ -13,6 +15,7 @@ export class UsersService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Role)
 		private readonly roleRepository: Repository<Role>,
+		@Inject(CACHE_MANAGER) private cacheService: Cache,
 	) {}
 	async create(createUserDto: CreateUserDto) {
 		if (
@@ -104,6 +107,15 @@ export class UsersService {
 	async updateRoles(id: number, roles: Role[]): Promise<User> {
 		const user = await this.userRepository.findOneOrFail({ where: { id } });
 		this.userRepository.merge(user, { roles });
-		return await this.userRepository.save(user);
+		await this.userRepository.save(user);
+
+		// Lưu danh sách vai trò của người dùng vào Redis
+		await this.cacheService.set(
+			`user:${user.id}:roles`,
+			JSON.stringify(roles.map((role) => role.id)),
+		);
+		console.log(await this.cacheService.get(`user:${user.id}:roles`));
+
+		return user;
 	}
 }
