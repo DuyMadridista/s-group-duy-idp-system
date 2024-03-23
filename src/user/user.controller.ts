@@ -21,7 +21,7 @@ export class UserController {
 	constructor(private readonly userService: UsersService) {}
 	//@Public()
 	@UseGuards(PermissionGuard)
-	@SetMetadata('permissions', ['create user'])
+	@SetMetadata('permissions', ['read user'])
 	@Post()
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.create(createUserDto);

@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import * as cors from 'cors';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,11 +11,17 @@ import { AuthModule } from './auth/auth.module';
 import typeorm from './config/typeorm';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule } from '@nestjs/cache-manager';
+import { GoogleModule } from './OAuth/google-auth.module';
+import { UsersService } from './user/user.service';
+import { User } from './user/entities/user.entity';
+import { Role } from './role/entities/role.entity';
+import { Permission } from './permission/entities/permission.entity';
 
 @Module({
 	imports: [
 		UserModule,
 		RoleModule,
+		GoogleModule,
 		PermissionModule,
 		CacheModule.register({
 			isGlobal: true,
@@ -32,8 +39,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 				configService.get('typeorm'),
 		}),
 		AuthModule,
+		TypeOrmModule.forFeature([User, Role, Permission]),
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService, UsersService],
 })
-export class AppModule {}
+export class AppModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer
+			.apply(cors({ origin: '*' }))
+			.forRoutes({ path: '*', method: RequestMethod.ALL });
+	}
+}

@@ -28,11 +28,12 @@ export class UsersService {
 		const user = new User();
 		const salt = 10;
 		user.username = createUserDto.username;
-		user.password = await bcrypt.hash(createUserDto.password, salt);
+		user.password = await bcrypt.hash(createUserDto.password || '123456', salt);
 		user.fullname = createUserDto.fullname;
 		const savedUser = await this.userRepository.create(user);
 		const roles: Role[] = [];
-		for (const roleId of createUserDto.role) {
+		// nếu không có role thì roleid mac định là 2 user
+		for (const roleId of createUserDto.role || [2]) {
 			const role = await this.roleRepository.findOneBy({ id: roleId });
 			if (!role) {
 				throw new Error(`Role with id ${roleId} not found`);
@@ -45,7 +46,7 @@ export class UsersService {
 
 	async findAll(
 		page: number = 1,
-		limit: number = 10,
+		limit: number = 20,
 		search: string = '',
 		sort: string = 'ASC',
 	): Promise<User[]> {

@@ -44,8 +44,8 @@ export class RoleController {
 	remove(@Param('id') id: string) {
 		return this.roleService.remove(+id);
 	}
-	@UseGuards(PermissionGuard)
-	@SetMetadata('permissions', ['super_admin permission', 'assign roles'])
+	// @UseGuards(PermissionGuard)
+	// @SetMetadata('permissions', ['super_admin permission', 'assign roles'])
 	@Put('assignRole')
 	assignRole(@Body() assignRoledto: AssignRoleDto) {
 		return this.roleService.assignRole(
