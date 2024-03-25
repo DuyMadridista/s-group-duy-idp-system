@@ -21,7 +21,10 @@ export class User {
 	createdAt: Date;
 	@Column({ type: 'timestamptz', nullable: true, default: null })
 	updatedAt: Date;
-
+	@Column()
+	email: string;
+	@Column()
+	age: number;
 	@ManyToMany(() => Role)
 	@JoinTable({
 		name: 'users_roles',

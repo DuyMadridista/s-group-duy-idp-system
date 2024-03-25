@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Like, Repository } from 'typeorm';
+import { Between, Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Role } from 'src/role/entities/role.entity';
@@ -28,11 +28,12 @@ export class UsersService {
 		const user = new User();
 		const salt = 10;
 		user.username = createUserDto.username;
-		user.password = await bcrypt.hash(createUserDto.password, salt);
+		user.password = await bcrypt.hash(createUserDto.password || '123456', salt);
 		user.fullname = createUserDto.fullname;
 		const savedUser = await this.userRepository.create(user);
 		const roles: Role[] = [];
-		for (const roleId of createUserDto.role) {
+		// nếu không có role thì roleid mac định là 2 user
+		for (const roleId of createUserDto.role || [2]) {
 			const role = await this.roleRepository.findOneBy({ id: roleId });
 			if (!role) {
 				throw new Error(`Role with id ${roleId} not found`);
@@ -45,30 +46,26 @@ export class UsersService {
 
 	async findAll(
 		page: number = 1,
-		limit: number = 10,
+		limit: number = 20,
 		search: string = '',
 		sort: string = 'ASC',
+		fromDate: Date | null = null,
+		toDate: Date | null = null,
 	): Promise<User[]> {
-		// Tính toán offset dựa trên trang và giới hạn
 		const offset = (page - 1) * limit;
-
-		// Tạo một đối tượng chứa các điều kiện tìm kiếm và sắp xếp
-		const conditions = {
-			// Điều kiện tìm kiếm dựa trên search (ví dụ: tên người dùng)
+		const conditions: any = {
 			where: {
 				username: Like(`%${search}%`),
 			},
-			// Sắp xếp theo username
 			order: {
 				username: sort.toUpperCase() as 'ASC' | 'DESC',
 			},
-			// Giới hạn số lượng kết quả trả về
 			take: limit,
-			// Bỏ qua kết quả trước offset
 			skip: offset,
 		};
-
-		// Sử dụng repository để tìm kiếm người dùng dựa trên điều kiện và trả về kết quả
+		if (fromDate && toDate) {
+			conditions.where.updatedAt = Between(fromDate, toDate);
+		}
 		return await this.userRepository.find(conditions);
 	}
 

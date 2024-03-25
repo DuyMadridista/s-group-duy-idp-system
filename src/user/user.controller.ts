@@ -21,7 +21,7 @@ export class UserController {
 	constructor(private readonly userService: UsersService) {}
 	//@Public()
 	@UseGuards(PermissionGuard)
-	@SetMetadata('permissions', ['create user'])
+	@SetMetadata('permissions', ['read user'])
 	@Post()
 	create(@Body() createUserDto: CreateUserDto) {
 		return this.userService.create(createUserDto);
@@ -35,8 +35,9 @@ export class UserController {
 		@Query('limit') limit: number,
 		@Query('search') search: string,
 		@Query('sort') sort: string,
+		@Query('filter') filter: string,
 	) {
-		return this.userService.findAll(page, limit, search, sort);
+		return this.userService.findAll(page, limit, search, sort,filter);
 	}
 	@UseGuards(PermissionGuard)
 	@SetMetadata('permissions', ['read user'])

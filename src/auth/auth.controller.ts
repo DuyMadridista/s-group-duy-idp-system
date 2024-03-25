@@ -3,9 +3,9 @@ import {
 	Controller,
 	Post,
 	Get,
+	Request,
 	HttpCode,
 	HttpStatus,
-	Request,
 	UseGuards,
 	SetMetadata,
 } from '@nestjs/common';
@@ -25,10 +25,10 @@ export class AuthController {
 		return this.authService.login(loginDTO.username, loginDTO.password);
 	}
 
-	@UseGuards(PermissionGuard)
-	@SetMetadata('permissions', ['read user'])
+	//@UseGuards(PermissionGuard)
+	//@SetMetadata('permissions', ['read user'])
 	@Get('profile')
-	getProfile() {
-		return 'okk';
+	getProfile(@Request() req) {
+		return this.authService.getProfile(req);
 	}
 }
