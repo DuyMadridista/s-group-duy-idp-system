@@ -15,6 +15,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Public } from 'src/auth/globalAuth';
 import { PermissionGuard } from 'src/auth/guard.ts/permission.guard';
+import { from } from 'rxjs';
 
 @Controller('user')
 export class UserController {
@@ -36,8 +37,10 @@ export class UserController {
 		@Query('search') search: string,
 		@Query('sort') sort: string,
 		@Query('filter') filter: string,
+		@Query('fromDate') fromDate: Date,
+		@Query('toDate') toDate: Date,
 	) {
-		return this.userService.findAll(page, limit, search, sort,filter);
+		return this.userService.findAll(page, limit, search, sort,filter, fromDate, toDate);
 	}
 	@UseGuards(PermissionGuard)
 	@SetMetadata('permissions', ['read user'])

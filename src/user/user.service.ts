@@ -49,6 +49,7 @@ export class UsersService {
 		limit: number = 20,
 		search: string = '',
 		sort: string = 'ASC',
+		filters: string = '',
 		fromDate: Date | null = null,
 		toDate: Date | null = null,
 	): Promise<User[]> {
@@ -63,6 +64,10 @@ export class UsersService {
 			take: limit,
 			skip: offset,
 		};
+		if (filters) {
+			// filters theo username hoặc fullname
+			conditions.where = [{ username: filters }, { fullname: filters }];
+		}
 		if (fromDate && toDate) {
 			conditions.where.updatedAt = Between(fromDate, toDate);
 		}
