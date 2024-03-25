@@ -35,8 +35,9 @@ export class UserController {
 		@Query('limit') limit: number,
 		@Query('search') search: string,
 		@Query('sort') sort: string,
+		@Query('filter') filter: string,
 	) {
-		return this.userService.findAll(page, limit, search, sort);
+		return this.userService.findAll(page, limit, search, sort,filter);
 	}
 	@UseGuards(PermissionGuard)
 	@SetMetadata('permissions', ['read user'])

@@ -4,11 +4,9 @@ import { Role } from 'src/role/entities/role.entity';
 
 export class SeedingUser1711180981275 implements MigrationInterface {
 	public async up(queryRunner: QueryRunner): Promise<void> {
-		// Di chuyển khai báo vào trong hàm up
 		const userRepository = queryRunner.manager.getRepository(User);
 		const roleRepository = queryRunner.manager.getRepository(Role);
 
-		// Lấy tất cả các role từ bảng role
 		const allRoles = await roleRepository.find();
 
 		// Tạo và seed 1000 người dùng
